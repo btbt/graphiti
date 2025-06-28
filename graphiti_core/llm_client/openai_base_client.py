@@ -132,6 +132,13 @@ class BaseOpenAIClient(LLMClient):
         openai_messages = self._convert_messages_to_openai_format(messages)
         model = self._get_model_for_size(model_size)
 
+        # Debug logging for request parameters
+        logger.debug(
+            f'Making OpenAI request - model: {model}, temperature: {self.temperature}, '
+            f'max_tokens: {max_tokens or self.max_tokens}, response_model: {"yes" if response_model else "no"}, '
+            f'messages: {openai_messages}'
+        )
+
         try:
             if response_model:
                 response = await self._create_structured_completion(
@@ -141,6 +148,8 @@ class BaseOpenAIClient(LLMClient):
                     max_tokens=max_tokens or self.max_tokens,
                     response_model=response_model,
                 )
+                # Debug logging for structured response
+                logger.debug(f'Received structured response: {response}')
                 return self._handle_structured_response(response)
             else:
                 response = await self._create_completion(
@@ -149,13 +158,18 @@ class BaseOpenAIClient(LLMClient):
                     temperature=self.temperature,
                     max_tokens=max_tokens or self.max_tokens,
                 )
+                # Debug logging for regular response
+                logger.debug(f'Received completion response: {response}')
                 return self._handle_json_response(response)
 
         except openai.LengthFinishReasonError as e:
+            logger.debug(f'Length finish reason error: {e}')
             raise Exception(f'Output length exceeded max tokens {self.max_tokens}: {e}') from e
         except openai.RateLimitError as e:
+            logger.debug(f'Rate limit error: {e}')
             raise RateLimitError from e
         except Exception as e:
+            logger.debug(f'Unexpected error in _generate_response: {e}')
             logger.error(f'Error in generating LLM response: {e}')
             raise
 
@@ -170,6 +184,12 @@ class BaseOpenAIClient(LLMClient):
         if max_tokens is None:
             max_tokens = self.max_tokens
 
+        # Debug logging for entry parameters
+        logger.debug(
+            f'generate_response called - max_tokens: {max_tokens}, model_size: {model_size}, '
+            f'response_model: {"yes" if response_model else "no"}, message_count: {len(messages)}'
+        )
+
         retry_count = 0
         last_error = None
 
@@ -178,21 +198,26 @@ class BaseOpenAIClient(LLMClient):
 
         while retry_count <= self.MAX_RETRIES:
             try:
+                logger.debug(f'Attempting request (attempt {retry_count + 1}/{self.MAX_RETRIES + 1})')
                 response = await self._generate_response(
                     messages, response_model, max_tokens, model_size
                 )
+                logger.debug(f'Successfully generated response: {response}')
                 return response
-            except (RateLimitError, RefusalError):
+            except (RateLimitError, RefusalError) as e:
                 # These errors should not trigger retries
+                logger.debug(f'Non-retryable error encountered: {type(e).__name__}')
                 raise
-            except (openai.APITimeoutError, openai.APIConnectionError, openai.InternalServerError):
+            except (openai.APITimeoutError, openai.APIConnectionError, openai.InternalServerError) as e:
                 # Let OpenAI's client handle these retries
+                logger.debug(f'OpenAI client error (not retrying): {e}')
                 raise
             except Exception as e:
                 last_error = e
 
                 # Don't retry if we've hit the max retries
                 if retry_count >= self.MAX_RETRIES:
+                    logger.debug(f'Max retries reached, final error: {e}')
                     logger.error(f'Max retries ({self.MAX_RETRIES}) exceeded. Last error: {e}')
                     raise
 
@@ -209,9 +234,11 @@ class BaseOpenAIClient(LLMClient):
 
                 error_message = Message(role='user', content=error_context)
                 messages.append(error_message)
+                logger.debug(f'Retrying after error (attempt {retry_count}/{self.MAX_RETRIES}): {e}')
                 logger.warning(
                     f'Retrying after application error (attempt {retry_count}/{self.MAX_RETRIES}): {e}'
                 )
 
         # If we somehow get here, raise the last error
+        logger.debug(f'Unexpected exit from retry loop, raising last error: {last_error}')
         raise last_error or Exception('Max retries exceeded with no specific error')
