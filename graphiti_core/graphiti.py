@@ -418,6 +418,10 @@ class Graphiti:
             start = time()
             now = utc_now()
 
+            logger.debug(
+                f'Starting add_episode: {episode_body[:50]}..., group_id: {group_id}'
+            )
+
             validate_entity_types(entity_types)
             validate_excluded_entity_types(excluded_entity_types, entity_types)
             validate_group_id(group_id)
