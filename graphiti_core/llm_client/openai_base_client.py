@@ -133,9 +133,13 @@ class BaseOpenAIClient(LLMClient):
         model = self._get_model_for_size(model_size)
 
         # Debug logging for request parameters
+        if response_model:
+            model_info = f"{response_model.__name__} fields: {list(getattr(response_model, 'model_fields', {}).keys())}"
+        else:
+            model_info = "no"
         logger.debug(
             f'Making OpenAI request - model: {model}, temperature: {self.temperature}, '
-            f'max_tokens: {max_tokens or self.max_tokens}, response_model: {"yes" if response_model else "no"}, '
+            f'max_tokens: {max_tokens or self.max_tokens}, response_model: {model_info}, '
             f'messages: {openai_messages}'
         )
 
