@@ -21,10 +21,8 @@ from typing_extensions import LiteralString
 
 from graphiti_core.driver.driver import GraphDriver
 from graphiti_core.graph_queries import get_fulltext_indices, get_range_indices
-from graphiti_core.helpers import DEFAULT_DATABASE, parse_db_date, semaphore_gather
+from graphiti_core.helpers import DEFAULT_DATABASE, EPISODE_WINDOW_LEN, parse_db_date, semaphore_gather
 from graphiti_core.nodes import EpisodeType, EpisodicNode
-
-EPISODE_WINDOW_LEN = 3
 
 logger = logging.getLogger(__name__)
 

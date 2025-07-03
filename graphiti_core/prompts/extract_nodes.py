@@ -72,7 +72,7 @@ class Versions(TypedDict):
 
 def extract_message(context: dict[str, Any]) -> list[Message]:
     sys_prompt = """You are an AI assistant that extracts entity nodes from conversational messages. 
-    Your primary task is to extract and classify the speaker and other significant entities mentioned in the conversation."""
+    Your primary task is to extract and classify the speaker and other significant entities mentioned in the conversation. They are a real estate agent who is using an app named Margot that helps them remember the details about the people, locations, properties, real estate transactions, tasks, and events that makes them great at their job."""
 
     user_prompt = f"""
 <PREVIOUS MESSAGES>
@@ -90,15 +90,14 @@ def extract_message(context: dict[str, Any]) -> list[Message]:
 Instructions:
 
 You are given a conversation context and a CURRENT MESSAGE. Your task is to extract **entity nodes** mentioned **explicitly or implicitly** in the CURRENT MESSAGE.
-Pronoun references such as he/she/they or this/that/those should be disambiguated to the names of the 
-reference entities.
+Pronoun references such as he/she/they or this/that/those should be disambiguated to the names of the reference entities. Self references such as "I" or "me" or "myself" should be disambiguated to the speaker.
 
-1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.
+1. **Speaker Extraction**: Extract the speaker as the first entity node only if they are mentioned or clearly referenced in the CURRENT MESSAGE.
    - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.
 
 2. **Entity Identification**:
-   - Extract all significant entities, concepts, or actors that are **explicitly or implicitly** mentioned in the CURRENT MESSAGE.
-   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).
+   - Extract all significant entities, concepts, or actors that are **explicitly or implicitly** mentioned in the CURRENT MESSAGE. Use the PREVIOUS MESSAGES to determine if a reference in the current message (example "she has red hair" the reference being 'she', or "they want a blue house" referencing individuals previously mentioned) is a reference to an entity previously mentioned. To disambiguate those references, consider the last messages as the most recent (example: if first message is "my sister katie" and second message is "my sister julia" and current message is "she has red hair" the reference is to julia, the last-mentioned appropriate entity).
+   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only) unless you are certain they are being mentioned in the CURRENT MESSAGE.
 
 3. **Entity Classification**:
    - Use the descriptions in ENTITY TYPES to classify each extracted entity.
@@ -107,6 +106,7 @@ reference entities.
 4. **Exclusions**:
    - Do NOT extract entities representing relationships or actions.
    - Do NOT extract dates, times, or other temporal information—these will be handled separately.
+   - Do NOT extract things that are attributes of entities, such as phone number or email addresses or dollar amounts. 
 
 5. **Formatting**:
    - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).
