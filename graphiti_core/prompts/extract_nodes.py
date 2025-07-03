@@ -251,15 +251,22 @@ def extract_attributes(context: dict[str, Any]) -> list[Message]:
         {json.dumps(context['episode_content'], indent=2)}
         </MESSAGES>
 
-        Given the above MESSAGES and the following ENTITY, update any of its attributes based on the information provided
-        in MESSAGES. Use the provided attribute descriptions to better understand how each attribute should be determined.
+        Given the above MESSAGES and the specific ENTITY below, extract attributes ONLY for that ENTITY. 
+        - Do NOT extract or infer attributes from other entities or speakers.
+        - If there is no clear attribute information about the ENTITY in the MESSAGES, return None or empty values for all attributes.
+        - Only set attribute values that are clearly and explicitly related to the ENTITY below.
 
         Guidelines:
         1. Do not hallucinate entity property values if they cannot be found in the current context.
         2. Only use the provided MESSAGES and ENTITY to set attribute values.
-        3. The summary attribute represents a summary of the ENTITY, and should be updated with new information about the Entity from the MESSAGES. 
+        3. The summary attribute represents a summary of the ENTITY, and should be updated with new information about the Entity from the MESSAGES. Only summarize information specific to this one ENTITY, not all Entities detected in the MESSAGES.
             Summaries must be no longer than 250 words.
         
+        Example:
+        If the ENTITY is "John's dog" and the MESSAGES only mention "John went to the park," then all attributes for an Entity "John's dog" should be None or empty.
+
+        ENTITY TO EXTRACT attributes for:
+
         <ENTITY>
         {context['node']}
         </ENTITY>
