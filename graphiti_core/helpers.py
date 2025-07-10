@@ -38,6 +38,11 @@ SEMAPHORE_LIMIT = int(os.getenv('SEMAPHORE_LIMIT', 20))
 MAX_REFLEXION_ITERATIONS = int(os.getenv('MAX_REFLEXION_ITERATIONS', 0))
 DEFAULT_PAGE_LIMIT = 20
 EPISODE_WINDOW_LEN = int(os.getenv('EPISODE_WINDOW_LEN', 3))
+CONTEXT_EPISODE_TYPE = os.getenv('CONTEXT_EPISODE_TYPE', None)
+"""
+If set, overrides the episode type used for context retrieval in add_episode (e.g., 'chat').
+If not set, the system uses the incoming episode's source type (legacy behavior).
+"""
 
 RUNTIME_QUERY: LiteralString = (
     'CYPHER runtime = parallel parallelRuntimeSupport=all\n' if USE_PARALLEL_RUNTIME else ''

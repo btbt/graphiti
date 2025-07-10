@@ -34,6 +34,7 @@ from graphiti_core.helpers import (
     semaphore_gather,
     validate_excluded_entity_types,
     validate_group_id,
+    CONTEXT_EPISODE_TYPE,
 )
 from graphiti_core.llm_client import LLMClient, OpenAIClient
 from graphiti_core.nodes import CommunityNode, EntityNode, EpisodeType, EpisodicNode
@@ -430,14 +431,21 @@ class Graphiti:
             validate_excluded_entity_types(excluded_entity_types, entity_types)
             validate_group_id(group_id)
 
+            # --- Brian, 2024-07-09 ---
+            # Context episode type for previous episode retrieval is now configurable via the CONTEXT_EPISODE_TYPE environment variable.
+            # If set, this will override the default behavior and use the specified type (e.g., 'chat') for context.
+            # If not set, the system will use the incoming episode's source type (legacy behavior).
+            # -------------------------
+            context_episode_type = CONTEXT_EPISODE_TYPE
             if previous_episode_uuids is None:
                 logger.debug("Retrieving previous episodes by reference_time and group_id.")
+                prev_source = EpisodeType.from_str(context_episode_type) if context_episode_type else source
                 previous_episodes = (
                     await self.retrieve_episodes(
                         reference_time,
                         last_n=RELEVANT_SCHEMA_LIMIT,
                         group_ids=[group_id],
-                        source=source,
+                        source=prev_source,
                     )
                 )
                 logger.debug(f"Retrieved {len(previous_episodes)} previous episodes.")
@@ -463,6 +471,19 @@ class Graphiti:
                     valid_at=reference_time,
                 )
                 logger.debug(f"Created new episode: {episode}")
+
+            # --- Brian, 2024-07-09 ---
+            # If the episode type is 'chat', only store the episode in the database without any entity extraction,
+            # edge extraction, or other processing. This ensures chat messages are available for context/history
+            # but do not affect the knowledge graph structure. Part of the unified conversational interface redesign.
+            # -------------------------
+            if source == EpisodeType.chat:
+                # Only store the episode, no processing
+                await add_nodes_and_edges_bulk(
+                    self.driver, [episode], [], [], [], self.embedder
+                )
+                logger.info(f"Stored chat episode (no processing): '{episode.content[:50]}...'")
+                return AddEpisodeResults(episode=episode, nodes=[], edges=[])
 
             # Create default edge type map
             edge_type_map_default = (

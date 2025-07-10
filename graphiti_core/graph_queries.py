@@ -62,6 +62,11 @@ def get_range_indices(db_type: str = 'neo4j') -> list[LiteralString]:
             'CREATE INDEX expired_at_edge_index IF NOT EXISTS FOR ()-[e:RELATES_TO]-() ON (e.expired_at)',
             'CREATE INDEX valid_at_edge_index IF NOT EXISTS FOR ()-[e:RELATES_TO]-() ON (e.valid_at)',
             'CREATE INDEX invalid_at_edge_index IF NOT EXISTS FOR ()-[e:RELATES_TO]-() ON (e.invalid_at)',
+            # --- TODO: Brian, 2024-07-09 ---
+            # To optimize queries filtering by episode type (e.g., source = 'chat'), consider enabling the following index:
+            # 'CREATE INDEX episode_source IF NOT EXISTS FOR (n:Episodic) ON (n.source)',
+            # Uncomment the above line if you want to add an index on Episodic.source in the future.
+            # -------------------------
         ]
 
 
