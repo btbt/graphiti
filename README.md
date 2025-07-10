@@ -137,7 +137,18 @@ or
 uv add graphiti-core
 ```
 
-You can also install optional LLM providers as extras:
+### Installing with FalkorDB Support
+
+If you plan to use FalkorDB as your graph database backend, install with the FalkorDB extra:
+
+```bash
+pip install graphiti-core[falkordb]
+
+# or with uv
+uv add graphiti-core[falkordb]
+```
+
+### You can also install optional LLM providers as extras:
 
 ```bash
 # Install with Anthropic support
@@ -151,6 +162,9 @@ pip install graphiti-core[google-genai]
 
 # Install with multiple providers
 pip install graphiti-core[anthropic,groq,google-genai]
+
+# Install with FalkorDB and LLM providers
+pip install graphiti-core[falkordb,anthropic,google-genai]
 ```
 
 ## Quick Start
@@ -198,6 +212,28 @@ Please see the [server README](./server/README.md) for more information.
 In addition to the Neo4j and OpenAi-compatible credentials, Graphiti also has a few optional environment variables.
 If you are using one of our supported models, such as Anthropic or Voyage models, the necessary environment variables
 must be set.
+
+### Database Configuration
+
+`DEFAULT_DATABASE` specifies the database name to use for graph operations. This is particularly important for Neo4j 5+ users:
+
+- **Neo4j 5+**: The default database name is `neo4j` (not `default_db`)
+- **Neo4j 4**: The default database name is `default_db`
+- **FalkorDB**: The default graph name is `default_db`
+
+If you encounter the error `Graph not found: default_db` when using Neo4j 5, set:
+
+```bash
+export DEFAULT_DATABASE=neo4j
+```
+
+Or add to your `.env` file:
+
+```
+DEFAULT_DATABASE=neo4j
+```
+
+### Performance Configuration
 
 `USE_PARALLEL_RUNTIME` is an optional boolean variable that can be set to true if you wish
 to enable Neo4j's parallel runtime feature for several of our search queries.

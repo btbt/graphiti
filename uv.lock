@@ -739,7 +739,7 @@ wheels = [
 
 [[package]]
 name = "graphiti-core"
-version = "0.15.0"
+version = "0.16.0"
 source = { editable = "." }
 dependencies = [
     { name = "diskcache" },
@@ -759,6 +759,7 @@ anthropic = [
 dev = [
     { name = "anthropic" },
     { name = "diskcache-stubs" },
+    { name = "falkordb" },
     { name = "google-genai" },
     { name = "groq" },
     { name = "ipykernel" },
@@ -776,7 +777,7 @@ dev = [
     { name = "transformers" },
     { name = "voyageai" },
 ]
-falkord-db = [
+falkordb = [
     { name = "falkordb" },
 ]
 google-genai = [
@@ -785,6 +786,12 @@ google-genai = [
 groq = [
     { name = "groq" },
 ]
+sentence-transformers = [
+    { name = "sentence-transformers" },
+]
+voyageai = [
+    { name = "voyageai" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -792,7 +799,8 @@ requires-dist = [
     { name = "anthropic", marker = "extra == 'dev'", specifier = ">=0.49.0" },
     { name = "diskcache", specifier = ">=5.6.3" },
     { name = "diskcache-stubs", marker = "extra == 'dev'", specifier = ">=5.6.3.6.20240818" },
-    { name = "falkordb", marker = "extra == 'falkord-db'", specifier = ">=1.1.2,<2.0.0" },
+    { name = "falkordb", marker = "extra == 'dev'", specifier = ">=1.1.2,<2.0.0" },
+    { name = "falkordb", marker = "extra == 'falkordb'", specifier = ">=1.1.2,<2.0.0" },
     { name = "google-genai", marker = "extra == 'dev'", specifier = ">=1.8.0" },
     { name = "google-genai", marker = "extra == 'google-genai'", specifier = ">=1.8.0" },
     { name = "groq", marker = "extra == 'dev'", specifier = ">=0.2.0" },
@@ -815,11 +823,13 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.7.1" },
     { name = "sentence-transformers", marker = "extra == 'dev'", specifier = ">=3.2.1" },
+    { name = "sentence-transformers", marker = "extra == 'sentence-transformers'", specifier = ">=3.2.1" },
     { name = "tenacity", specifier = ">=9.0.0" },
     { name = "transformers", marker = "extra == 'dev'", specifier = ">=4.45.2" },
     { name = "voyageai", marker = "extra == 'dev'", specifier = ">=0.2.3" },
+    { name = "voyageai", marker = "extra == 'voyageai'", specifier = ">=0.2.3" },
 ]
-provides-extras = ["anthropic", "groq", "google-genai", "falkord-db", "dev"]
+provides-extras = ["anthropic", "groq", "google-genai", "falkordb", "voyageai", "sentence-transformers", "dev"]
 
 [[package]]
 name = "groq"
